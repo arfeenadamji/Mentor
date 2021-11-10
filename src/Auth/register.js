@@ -2,37 +2,48 @@ import React, { useState } from "react";
 import { View, TextInput, Text, Button, StyleSheet } from "react-native";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import RadioGroup from 'react-native-radio-buttons-group';
+import backendUrl from "../enviroment";
 
-
-
-
-
-const radioButtonsData = [{
-    id: '1', // acts as primary key, should be unique and non-empty string
+const genderData = [{
+    id: '1',
     label: 'Male',
     value: 'male'
 }, {
     id: '2',
     label: 'Female',
-    value: 'female'
+    type: 'female'
 }]
+const userTypeData = [{
+    id: '1',
+    label: 'Mentees',
+    type: 'mentees'
+},
+{
+    id: '2',
+    label: 'Mentor',
+    type: 'mentor'
+}
+]
 
 export default function Register(props) {
-    const [radioButtons, setRadioButtons] = useState(radioButtonsData)
     const [firstName, setFirstName] = useState("");
     const [lastName, setLastName] = useState("");
-    const [email, setEmail] = useState("");
     const [contact, setContact] = useState("");
+    const [email, setEmail] = useState("");
+    const [pass, setPass] = useState("");
+    const [date, setDate] = useState(new Date());
+    const [isDatePickerVisible, setDatePickerVisibility] = useState(false); // for date
     const [degree, setDegree] = useState("");
     const [skill, setSkill] = useState("");
-    const [pass, setPass] = useState("");
-const [date, setDate] = useState(new Date());
-    const [time, setTime] = useState(new Date());
-    const [isDatePickerVisible, setDatePickerVisibility] = useState(false);
+    const [gender, setGender] = useState(genderData)
+    const [userType, setUserType] = useState(userTypeData)
 
-    function onPressRadioButton(radioButtonsArray,e) {
-        setRadioButtons(radioButtonsArray);
-        console.log('radioButtonsArray',radioButtonsArray)
+    function onPressGenderBtn(genderArray) {
+        setGender(genderArray);
+    }
+
+    const onPressUserTypeBtn = (userArray) => {
+        setUserType(userArray)
     }
 
     const handleConfirm = (date) => {
@@ -43,43 +54,50 @@ const [date, setDate] = useState(new Date());
         setDatePickerVisibility(false);
     };
 
-    // let newTime = new Date(time).getHours() + ':' + new Date(time).getMinutes()
+    const signUp = async () => {
+        let tempGender = gender.filter((x) => {
+            return x.selected
+        })
+        let genderSelected = tempGender[0].label
 
-      const signUp = async () => {
+        let tempType = userType.filter((x) => {
+            return x.selected
+        })
+        let userTypeSelected = tempType[0].label
 
-        console.log(new Date(time).getHours() +':'+ new Date(time).getMinutes() > 10 ? + 0 : new
-        Date(time).getMinutes())
         const requestOptions = {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            firstName: firstName,
-            lastName: lastName,
-            contact:contact,
-            email: email,
-            pass: pass,
-            date:date,
-            degree:degree,
-            skill:skill
-          
-
-          }),
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                firstName: firstName,
+                lastName: lastName,
+                contact: contact,
+                email: email,
+                pass: pass,
+                date: date.toString().substr(4, 12),
+                degree: degree,
+                skill: skill,
+                gender: genderSelected,
+                userType: userTypeSelected
+            }),
         };
-        console.log(firstName,lastName,email,pass,contact,date,degree,skill)
-        return
-        await fetch(`${backendUrl}/Register`, requestOptions)
-          .then((response) => response.json())
-          .then((data) => {
-            console.log("data", data);
-            if (data.status == true) {
-              // props.navigation.navigate('list')
-              alert("user register");
-              console.log("user already created");
-            } else {
-              alert(data.message);
-            }
-          });
-      };
+        console.log(requestOptions)
+        // return
+        console.log(firstName, lastName, contact, email, pass, date, degree, skill, genderSelected, userTypeSelected)
+        await fetch(`${backendUrl}/signUp`, requestOptions)
+            .then((response) => response.json())
+            .then((data) => {
+                console.log("data", data);
+                if (data.status == true) {
+                    // props.navigation.navigate('list')
+                    alert("user register");
+                    console.log("user already created");
+                } else {
+
+                    alert('data.message', data.message);
+                }
+            });
+    };
 
     return (
         <View>
@@ -99,20 +117,20 @@ const [date, setDate] = useState(new Date());
                 />
             </View>
             <View style={{ flexDirection: "row" }}>
-            <TextInput
-                placeholder="Contact"
-                autoCapitalize="none"
-                onChangeText={(contact) => setContact(contact)}
-                style={styles.name}
-            />
-            <TextInput
-                placeholder="Email"
-                autoCapitalize="none"
-                onChangeText={(email) => setEmail(email)}
-                style={styles.name}
-            />
-            
-</View>
+                <TextInput
+                    placeholder="Contact"
+                    autoCapitalize="none"
+                    onChangeText={(contact) => setContact(contact)}
+                    style={styles.name}
+                />
+                <TextInput
+                    placeholder="Email"
+                    autoCapitalize="none"
+                    onChangeText={(email) => setEmail(email)}
+                    style={styles.name}
+                />
+
+            </View>
             <TextInput
                 placeholder="password"
                 autoCapitalize="none"
@@ -120,6 +138,26 @@ const [date, setDate] = useState(new Date());
                 style={styles.input}
                 secureTextEntry
             />
+               
+            <View style={{ flexDirection: "row" }}>
+                <Text style={styles.label}>Degree</Text>
+                <TextInput
+                    placeholder="Highest Degree"
+                    autoCapitalize="none"
+                    onChangeText={(degree) => setDegree(degree)}
+                    style={styles.name}
+                />
+            </View>
+
+            <View style={{ flexDirection: "row" }}>
+                <Text style={styles.label}>Skills</Text>
+                <TextInput
+                    placeholder="Skills"
+                    autoCapitalize="none"
+                    onChangeText={(skill) => setSkill(skill)}
+                    style={styles.name}
+                />
+            </View>
             <View style={styles.pickerContainer}>
                 <Text style={styles.label}>DOB</Text>
                 <DateTimePicker
@@ -134,40 +172,32 @@ const [date, setDate] = useState(new Date());
                     onConfirm={handleConfirm}
                     onCancel={hideDatePicker}
                 />
+            </View> 
+            <View style={{ paddingLeft: 10, flexDirection: 'row', paddingTop: 10 }}>
+                <Text style={styles.gender}>Gender</Text>
+                <RadioGroup
+                    radioButtons={gender}
+                    onPress={onPressGenderBtn}
+                    layout='row'
+                />
             </View>
-            <View style={{ flexDirection: "row" }}>
-            <Text style={styles.label}>Degree</Text>
-            <TextInput
-                placeholder="Highest Degree"
-                autoCapitalize="none"
-                onChangeText={(degree) => setDegree(degree)}
-                style={styles.name}
-            />
+            <View style={{ paddingLeft: 10, flexDirection: 'row', paddingTop: 10 }}>
+                <Text style={styles.gender}>User Type</Text>
+                <RadioGroup
+                    radioButtons={userType}
+                    onPress={onPressUserTypeBtn}
+                    layout='row'
+                // size={16}
+                />
             </View>
-
-            <View style={{ flexDirection: "row" }}>
-            <Text style={styles.label}>Skills</Text>
-            <TextInput
-                placeholder="Skills"
-                autoCapitalize="none"
-                onChangeText={(skill) => setSkill(skill)}
-                style={styles.name}
-            />
-            </View>
-            <View style={{paddingLeft:10}}>
-            <Text style={styles.gender}>Gender</Text>
-            <RadioGroup
-                radioButtons={radioButtons}
-                onPress={onPressRadioButton}
-                layout='row'
-            />
-            </View>
+            <View
+                style={{
+                    paddingTop: 10,
+                }} />
             <Button
-                style={styles.btn}
                 title="Sign Up"
-            onPress={() => signUp()}
+                onPress={() => signUp()}
             />
-            
         </View>
     );
 }
@@ -179,18 +209,18 @@ const styles = StyleSheet.create({
         height: '10%',
     },
     picker: {
+        height:'40',
         width: '40%',
-        height: '100%',
-        marginRight: 100,
-        alignItems: 'center',
-        justifyContent: 'center'
+        marginLeft: 13,
+        height: '100%'
     },
-    gender:{
-        paddingLeft:10,
-        paddingBottom:8,
-          width: "40%",
-          fontWeight: 'bold',
-          borderRadius: 10,
+    gender: {
+        paddingLeft: 10,
+        paddingTop: 5,
+        paddingBottom: 8,
+        width: "40%",
+        fontWeight: 'bold',
+        borderRadius: 10,
     },
     label: {
         height: 40,
@@ -211,6 +241,7 @@ const styles = StyleSheet.create({
     },
     input: {
         height: 40,
+        width: "85%",
         margin: 12,
         borderWidth: 1,
         padding: 10,
@@ -218,7 +249,9 @@ const styles = StyleSheet.create({
 
     },
     btn: {
-        margin: 100,
+        // margin: 100,
+        // paddingTop:20,
+        // marginTop:20
     },
     heading: {
         textAlign: "center",
