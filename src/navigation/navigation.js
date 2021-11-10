@@ -5,6 +5,8 @@ import { createStackNavigator } from "react-navigation-stack";
 import Auth from "../Auth/auth";
 import Register from "../Auth/register";
 import Temp from "../component/temp";
+import Mentor from "../screens/mentor";
+import Mentees from "../screens/mentees";
 
 
 const AuthNavigator = createStackNavigator(
@@ -22,7 +24,9 @@ const AuthNavigator = createStackNavigator(
 );
 const DrawerNavigator = createDrawerNavigator(
   {
-    tem:Temp
+    tem:Temp,
+    mentor:Mentor,
+    mentees:Mentees
     
  
   },
